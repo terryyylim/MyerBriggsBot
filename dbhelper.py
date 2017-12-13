@@ -37,8 +37,8 @@ class DBHelper:
                 perceiving_count int, jp_contrast text)"""
         #question_bank table
         stmt6 = """CREATE TABLE IF NOT EXISTS
-                question_bank(q_no int PRIMARY KEY, qn text,
-                qn_type text, option_a text, option_b text)"""
+                question_bank(question_number int PRIMARY KEY, question text,
+                question_type text, option_a text, option_b text)"""
         self.conn.execute(stmt1)
         self.conn.execute(stmt2)
         self.conn.execute(stmt3)
@@ -47,22 +47,27 @@ class DBHelper:
         self.conn.execute(stmt6)
         self.conn.commit()
 
-    def retrieve_data_from_json(self):
-        with open('question_bank.json') as json_data:
-            questions = json.load(json_data)
-            print(questions)
-            create_question_bank(questions)
-        #for question in questions:
-            #self.conn.execute("""INSERT INTO question_bank [(question_number, question_text,
-             #                 question_type, option_a, option_b)] VALUES (question[0],
-              #                question[1], question[2], question[3], question[4])"""
-
     #Populate question_bank table with questions from JSON file
-    """def create_question_bank(self, questions):
-        someitem = questions.itervalues().next()
-        columns = list(someitem.keys())
-        query = "INSERT INTO question_bank ({0}) VALUES"""
+    def retrieve_data_from_json(self):
+        dictlist = []
+        with open('question_bank.json') as json_data:
+            questions = json.load(json_data) #questions is a list of dictionaries
+        for dictionary in questions:
+            dictlist.append(list(dictionary.values()))  
+        for question in dictlist:
+            #Insertion of data must be converted to tuple form first
+            self.conn.executemany("""INSERT INTO question_bank (question_number, question,
+                                question_type, option_a, option_b) VALUES
+                                (?,?,?,?,?)""", (question,))
+        self.conn.commit()
 
+    #Provide questions to user
+    def getQuestions(self):
+        stmt = "SELECT question FROM question_bank"
+        #fetchall() is a cursor method
+        question = self.conn.execute(stmt).fetchall()
+        return question
+        
     #Need to fix this method
     def check_for_user(self, user_id):
         for row in self.conn.execute("SELECT chat_id FROM user WHERE chat_id = wanted_id"):

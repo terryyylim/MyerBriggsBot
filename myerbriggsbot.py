@@ -55,9 +55,9 @@ def handle_updates(updates):
                 will take approximately 30minutes to complete.
                 Send /hitmeup to begin the test.""", chat)
         elif text == "/hitmeup": #starting the test
-            print("bot prints through this method")
-            test_run = db.retrieve_data_from_json()
-            #questions = db.getQuestions()
+            #print("bot prints through this method")
+            questions = db.getQuestions()
+            print(questions)
             #for question in questions:
                 #display question
                 #display option buttons
