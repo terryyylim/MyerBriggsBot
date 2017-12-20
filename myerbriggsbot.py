@@ -1,3 +1,5 @@
+import telegram 
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import json
 import requests
 import time
@@ -45,29 +47,27 @@ def handle_updates(updates):
         chat_id = update["message"]["chat"]["id"]
         if text == "/start": #starting the bot
             if db.check_for_user(chat_id):
-                send_message("""Welcome back! You have taken the test before, would
-                you want to retake the test?""")
+                send_message("""Welcome back! You have taken the test before, would you want to retake the test?""")
                 keyboard = yes_no_keyboard() #retype method
                 send_message(keyboard)
             else:
-                send_message("""Welcome to Myer Briggs Test Bot. The test consists of
-                70 MCQs, where you can either select A or B as your answer. The test
-                will take approximately 30minutes to complete.
-                Send /hitmeup to begin the test.""", chat)
+                send_message("""Welcome to Myer Briggs Test Bot. The test consists of 70 MCQs,where you can either select A or B as your answer. The test will take approximately 30minutes to complete.
+Send /hitmeup to begin the test.""", chat_id)
         elif text == "/hitmeup": #starting the test
-            #print("bot prints through this method")
             questions = db.getQuestions()
-            print(questions)
-            #for question in questions:
+            for question in range(70):
                 #display question
-                #display option buttons
-                #keyboard = build_keyboard()
-                #send_message(keyboard)
+                send_message(questions[question][0], chat_id)
+                #build keyboard
+                #qn_keyboard = build_keyboard(question + 1)
+                #display options
+                #send_message("Choose an option", chat_id, qn_keyboard)
+                qn_keyboard = option_keyboard(question + 1)
+                send_message("Choose an option", chat_id, reply_markup=qn_keyboard)
         elif text.startswith("/"): #boolean checker
             continue
         else:
-            send_message("""Sorry, we are unable to process what you just typed.
-            Type /help for valid commands. Thank you!""")
+            send_message("""Sorry, we are unable to process what you just typed. Type /help for valid commands. Thank you!""")
 
 def get_last_chat_id_and_text(updates):
     num_updates = len(updates["result"])
@@ -84,17 +84,25 @@ def send_message(text, chat_id, reply_markup=None):
         url += "&reply_markup={}".format(reply_markup)
     get_url(url)
 
-def build_keyboard(items):
+def build_keyboard(question_number):
     #turns each item into a list, letting it be an entire row of the keyboard
-    keyboard = [[item] for item in items]
+    wanted_options = db.getOptions(question_number)
+    keyboard = [[wanted_options[0][0]],[wanted_options[0][1]]]
     reply_markup = {"keyboard":keyboard, "one_time_keyboard": True}
     #converting the Python dictionary into a JSON string
-    return json.dumps(reply_markup)    
+    return json.dumps(reply_markup) 
+
+def option_keyboard(question_number):
+    wanted_options = db.getOptions(question_number)
+    button_list = [InlineKeyboardButton(wanted_options[0][0], callback_data="a"),InlineKeyboardButton(wanted_options[0][1], callback_data="b")]
+    reply_markup = InlineKeyboardMarkup(button_list)
+    print(type(reply_markup))
+    return reply_markup
 
 def yes_no_keyboard():
     keyboard = ['yes','no']
     reply_markup = {"keyboard": keyboard, "one_time_keyboard": True}
-    return json.dumbs(reply_markup)
+    return json.dumps(reply_markup)
 
 def main():
     db.setup()

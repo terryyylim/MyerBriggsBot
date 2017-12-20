@@ -70,11 +70,25 @@ class DBHelper:
         
     #Need to fix this method
     def check_for_user(self, user_id):
-        for row in self.conn.execute("SELECT chat_id FROM user WHERE chat_id = wanted_id"):
+        wanted_id = str(user_id)
+        for row in self.conn.execute("SELECT chat_id FROM user WHERE chat_id = "+wanted_id+""):
             chat_id = row
-            return true
+            return True
             break
-        return false
+        return False
+    
+    def addCount(self, question_number):
+        wanted_qn = str(question_number)
+        stmt = "SELECT question FROM question_bank WHERE question_number = "+wanted_qn+""
+        question = self.conn.execute(stmt).fetchall()
+        return question
+        
+    #Get options for questions
+    def getOptions(self, question_number):
+        wanted_qn = str(question_number)
+        stmt = "SELECT option_a, option_b FROM question_bank WHERE question_number = "+wanted_qn+""
+        options = self.conn.execute(stmt).fetchall()
+        return options
 
     #To store the results of users who attempted the test
     def add_to_ei(self, user_id, e_count, i_count, ei_contrast):
